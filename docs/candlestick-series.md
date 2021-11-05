@@ -25,13 +25,15 @@ candlestickSeries.setData([
     { time: '2018-12-28', open: 111.51, high: 142.83, low: 103.34, close: 131.25 },
     { time: '2018-12-29', open: 131.33, high: 151.17, low: 77.68, close: 96.43 },
     { time: '2018-12-30', open: 106.33, high: 110.20, low: 90.39, close: 98.10 },
-    { time: '2018-12-31', open: 109.87, high: 114.69, low: 85.66, close: 111.26 },
+    { time: '2018-12-31', open: 109.87, high: 114.69, low: 85.66, close: 111.26, color: 'yellow', borderColor: 'black', wickColor: 'blue' },
 ]);
 ```
 
 ## Data format
 
 Each item of the candlestick series is either an [OHLC](./ohlc.md) or a [whitespace](./whitespace-data.md) item.
+
+Additionally to OHLC you could also provide `color`, `borderColor` and `wickColor` values for each data item to override a color of the item.
 
 ## Customization
 
