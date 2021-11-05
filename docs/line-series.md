@@ -35,6 +35,7 @@ Each item of the line series should be a [whitespace](./whitespace-data.md) item
 
 - `time` ([Time](./time.md)) - a time of the item
 - `value` (`number`) - a value of the item
+- `color` (`string`) - an optional color of the item
 
 ## Customization
 
