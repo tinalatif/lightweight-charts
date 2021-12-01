@@ -34,28 +34,44 @@ export type PriceAndCoordinateProvider = (priceScale: PriceScale) => CrosshairPr
 export type TimeAndCoordinateProvider = () => CrosshairTimeAndCoordinate;
 
 /**
- * Enum of possible crosshair behavior modes.
- * Normal means that the crosshair always follows the pointer.
- * Magnet means that the vertical line of the crosshair follows the pointer, while the horizontal line is placed on the corresponding series point.
+ * Represents the crosshair mode.
  */
 export const enum CrosshairMode {
+	/**
+	 * Crosshair's horizontal line is anchored to the closest data point's close price.
+	 */
 	Normal,
+	/**
+	 * Crosshair moves freely on the chart.
+	 */
 	Magnet,
 }
 
 /** Structure describing a crosshair line (vertical or horizontal) */
 export interface CrosshairLineOptions {
-	/** Color of a certain crosshair line */
+	/**
+	 * Crosshair line color.
+	 */
 	color: string;
-	/** Width of a certain crosshair line and corresponding scale label */
+	/**
+	 * Crosshair line width.
+	 */
 	width: LineWidth;
-	/** Style of a certain crosshair line */
+	/**
+	 * Crosshair line style.
+	 */
 	style: LineStyle;
-	/** Visibility of a certain crosshair line */
+	/**
+	 * Display the corosshair line.
+	 */
 	visible: boolean;
-	/** Visibility of corresponding scale label */
+	/**
+	 * Display the crosshair label on the relevant scale.
+	 */
 	labelVisible: boolean;
-	/** Background color of corresponding scale label */
+	/**
+	 * Crosshair label background color.
+	 */
 	labelBackgroundColor: string;
 }
 
@@ -63,9 +79,9 @@ export interface CrosshairLineOptions {
 export interface CrosshairOptions {
 	/** Crosshair mode */
 	mode: CrosshairMode;
-	/** Options of the crosshair vertical line */
+	/** Vertical line options. */
 	vertLine: CrosshairLineOptions;
-	/** Options of the crosshair horizontal line */
+	/** Horizontal line options. */
 	horzLine: CrosshairLineOptions;
 }
 
@@ -183,7 +199,7 @@ export class Crosshair extends DataSource {
 		return this._y;
 	}
 
-	public visible(): boolean {
+	public override visible(): boolean {
 		return this._visible;
 	}
 
@@ -211,7 +227,7 @@ export class Crosshair extends DataSource {
 		return this._options.vertLine.visible;
 	}
 
-	public priceAxisViews(pane: Pane, priceScale: PriceScale): IPriceAxisView[] {
+	public override priceAxisViews(pane: Pane, priceScale: PriceScale): IPriceAxisView[] {
 		if (!this._visible || this._pane !== pane) {
 			this._priceAxisViews.clear();
 		}
@@ -224,7 +240,7 @@ export class Crosshair extends DataSource {
 		return views;
 	}
 
-	public timeAxisViews(): readonly ITimeAxisView[] {
+	public override timeAxisViews(): readonly ITimeAxisView[] {
 		return this._visible ? [this._timeAxisView] : [];
 	}
 

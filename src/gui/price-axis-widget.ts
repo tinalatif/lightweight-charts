@@ -1,7 +1,7 @@
 import { CanvasElementBitmapSizeBinding, equalSizes, Size, size } from 'fancy-canvas';
 
 import { ensureNotNull } from '../helpers/assertions';
-import { clearRect } from '../helpers/canvas-helpers';
+import { clearRect, clearRectWithGradient } from '../helpers/canvas-helpers';
 import { IDestroyable } from '../helpers/idestroyable';
 import { makeFont } from '../helpers/make-font';
 
@@ -132,10 +132,6 @@ export class PriceAxisWidget implements IDestroyable {
 		return this._cell;
 	}
 
-	public backgroundColor(): string {
-		return this._options.backgroundColor;
-	}
-
 	public lineColor(): string {
 		return ensureNotNull(this._priceScale).options().borderColor;
 	}
@@ -198,6 +194,18 @@ export class PriceAxisWidget implements IDestroyable {
 			if (width > tickMarkMaxWidth) {
 				tickMarkMaxWidth = width;
 			}
+		}
+
+		const firstValue = this._priceScale.firstValue();
+		if (firstValue !== null && this._size !== null) {
+			const topValue = this._priceScale.coordinateToPrice(1 as Coordinate, firstValue);
+			const bottomValue = this._priceScale.coordinateToPrice(this._size.height - 2 as Coordinate, firstValue);
+
+			tickMarkMaxWidth = Math.max(
+				tickMarkMaxWidth,
+				this._widthCache.measureText(ctx, this._priceScale.formatPrice(Math.floor(Math.min(topValue, bottomValue)) + 0.11111111111111, firstValue)),
+				this._widthCache.measureText(ctx, this._priceScale.formatPrice(Math.ceil(Math.max(topValue, bottomValue)) - 0.11111111111111, firstValue))
+			);
 		}
 
 		let res = Math.ceil(
@@ -287,7 +295,7 @@ export class PriceAxisWidget implements IDestroyable {
 		const model = this._pane.chart().model();
 		const pane = this._pane.state();
 		this._mousedown = true;
-		model.startScalePrice(pane, this._priceScale, e.localY as Coordinate);
+		model.startScalePrice(pane, this._priceScale, e.localY);
 	}
 
 	private _pressedMouseMoveEvent(e: TouchMouseEvent): void {
@@ -298,7 +306,7 @@ export class PriceAxisWidget implements IDestroyable {
 		const model = this._pane.chart().model();
 		const pane = this._pane.state();
 		const priceScale = this._priceScale;
-		model.scalePriceTo(pane, priceScale, e.localY as Coordinate);
+		model.scalePriceTo(pane, priceScale, e.localY);
 	}
 
 	private _mouseDownOutsideEvent(): void {
@@ -370,7 +378,17 @@ export class PriceAxisWidget implements IDestroyable {
 	}
 
 	private _drawBackground(ctx: CanvasRenderingContext2D, renderParams: CanvasRenderingParams): void {
-		clearRect(ctx, 0, 0, renderParams.bitmapSize.width, renderParams.bitmapSize.height, this.backgroundColor());
+		const model = this._pane.state().model();
+		const topColor = model.backgroundTopColor();
+		const bottomColor = model.backgroundBottomColor();
+		const width = renderParams.bitmapSize.width;
+		const height = renderParams.bitmapSize.height;
+
+		if (topColor === bottomColor) {
+			clearRect(ctx, 0, 0, width, height, topColor);
+		} else {
+			clearRectWithGradient(ctx, 0, 0, width, height, topColor, bottomColor);
+		}
 	}
 
 	private _drawBorder(ctx: CanvasRenderingContext2D, renderParams: CanvasRenderingParams): void {

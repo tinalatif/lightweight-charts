@@ -1,3 +1,5 @@
+import { IPriceFormatter } from '../formatters/iprice-formatter';
+
 import { BarPrice } from '../model/bar';
 import { Coordinate } from '../model/coordinate';
 import { PriceLineOptions } from '../model/price-line-options';
@@ -13,26 +15,27 @@ import { SeriesDataItemTypeMap, Time } from './data-consumer';
 import { IPriceLine } from './iprice-line';
 import { IPriceScaleApi } from './iprice-scale-api';
 
+/**
+ * Represents a range of bars and the number of bars outside the range.
+ */
 // actually range might be either exist or not
 // but to avoid hard-readable type let's say every part of range is optional
 export type BarsInfo =
 	Partial<Range<Time>>
 	& {
+		/**
+		 * The number of bars before the start of the range.
+		 */
 		barsBefore: number;
+		/**
+		 * The number of bars after the end of the range.
+		 */
 		barsAfter: number;
 	};
 
-/** Interface to be implemented by the object in order to be used as a price formatter */
-export interface IPriceFormatter {
-	/**
-	 * Formatting function
-	 *
-	 * @param price - original price to be formatted
-	 * @returns formatted price
-	 */
-	format(price: BarPrice): string;
-}
-
+/**
+ * Represents the interface for interacting with series.
+ */
 export interface ISeriesApi<TSeriesType extends SeriesType> {
 	/**
 	 * Returns current price formatter

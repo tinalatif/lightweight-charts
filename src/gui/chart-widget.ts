@@ -10,6 +10,7 @@ import { DeepPartial } from '../helpers/strict-type-checks';
 import { BarPrice, BarPrices } from '../model/bar';
 import { ChartModel, ChartOptionsInternal } from '../model/chart-model';
 import { Coordinate } from '../model/coordinate';
+import { DefaultPriceScaleId } from '../model/default-price-scale';
 import {
 	InvalidateMask,
 	InvalidationLevel,
@@ -17,7 +18,6 @@ import {
 	TimeScaleInvalidationType,
 } from '../model/invalidate-mask';
 import { Point } from '../model/point';
-import { PriceAxisPosition } from '../model/price-scale';
 import { Series } from '../model/series';
 import { TimePoint, TimePointIndex } from '../model/time-data';
 
@@ -125,6 +125,10 @@ export class ChartWidget implements IDestroyable {
 		return this._paneWidgets;
 	}
 
+	public timeAxisWidget(): TimeAxisWidget {
+		return this._timeAxisWidget;
+	}
+
 	public destroy(): void {
 		this._element.removeEventListener('wheel', this._onWheelBound);
 		if (this._drawRafId !== 0) {
@@ -191,7 +195,9 @@ export class ChartWidget implements IDestroyable {
 			this._paneWidgets[i].paint(invalidateMask.invalidateForPane(i).level);
 		}
 
-		this._timeAxisWidget.paint(invalidateMask.fullInvalidation());
+		if (this._options.timeScale.visible) {
+			this._timeAxisWidget.paint(invalidateMask.fullInvalidation());
+		}
 	}
 
 	public applyOptions(options: DeepPartial<ChartOptionsInternal>): void {
@@ -234,7 +240,7 @@ export class ChartWidget implements IDestroyable {
 
 			const firstPane = this._paneWidgets[0];
 
-			const drawPriceAxises = (position: PriceAxisPosition) => {
+			const drawPriceAxises = (position: 'left' | 'right') => {
 				for (let paneIndex = 0; paneIndex < this._paneWidgets.length; paneIndex++) {
 					const paneWidget = this._paneWidgets[paneIndex];
 					const paneWidgetHeight = paneWidget.getSize().height;
@@ -276,7 +282,7 @@ export class ChartWidget implements IDestroyable {
 				targetY = 0;
 				drawPriceAxises('right');
 			}
-			const drawStub = (position: PriceAxisPosition) => {
+			const drawStub = (position: 'left' | 'right') => {
 				const stub = ensureNotNull(position === 'left' ? this._timeAxisWidget.leftStub() : this._timeAxisWidget.rightStub());
 				const stubSize = stub.getSize();
 				const stubImage = stub.getImage();
@@ -293,7 +299,7 @@ export class ChartWidget implements IDestroyable {
 				const timeAxisImage = this._timeAxisWidget.getImage();
 				ctx.drawImage(timeAxisImage, targetX, targetY, timeAxisSize.width, timeAxisSize.height);
 				if (this._isRightAxisVisible()) {
-					targetX = firstPane.getSize().width;
+					targetX += firstPane.getSize().width;
 					drawStub('right');
 					ctx.restore();
 				}
@@ -302,11 +308,7 @@ export class ChartWidget implements IDestroyable {
 		return targetCanvas;
 	}
 
-	public getPriceAxisWidth(position: PriceAxisPosition): number {
-		if (position === 'none') {
-			return 0;
-		}
-
+	public getPriceAxisWidth(position: DefaultPriceScaleId): number {
 		if (position === 'left' && !this._isLeftAxisVisible()) {
 			return 0;
 		}
@@ -353,7 +355,8 @@ export class ChartWidget implements IDestroyable {
 		// const separatorCount = this._paneSeparators.length;
 		// const separatorHeight = SEPARATOR_HEIGHT;
 		const separatorsHeight = 0; // separatorHeight * separatorCount;
-		let timeAxisHeight = this._options.timeScale.visible ? this._timeAxisWidget.optimalHeight() : 0;
+		const timeAxisVisible = this._options.timeScale.visible;
+		let timeAxisHeight = timeAxisVisible ? this._timeAxisWidget.optimalHeight() : 0;
 		// TODO: Fix it better
 		// on Hi-DPI CSS size * Device Pixel Ratio should be integer to avoid smoothing
 		if (timeAxisHeight % 2) {
@@ -395,9 +398,12 @@ export class ChartWidget implements IDestroyable {
 		}
 
 		this._timeAxisWidget.setSizes(
-			size({ width: paneWidth, height: timeAxisHeight }),
-			leftPriceAxisWidth,
-			rightPriceAxisWidth
+			size({
+				width: timeAxisVisible ? paneWidth : 0,
+				height: timeAxisHeight,
+			}),
+			timeAxisVisible ? leftPriceAxisWidth : 0,
+			timeAxisVisible ? rightPriceAxisWidth : 0
 		);
 
 		this._model.setWidth(paneWidth);
@@ -637,11 +643,11 @@ export class ChartWidget implements IDestroyable {
 	}
 
 	private _isLeftAxisVisible(): boolean {
-		return this._options.leftPriceScale.visible;
+		return this._paneWidgets[0].state().leftPriceScale().options().visible;
 	}
 
 	private _isRightAxisVisible(): boolean {
-		return this._options.rightPriceScale.visible;
+		return this._paneWidgets[0].state().rightPriceScale().options().visible;
 	}
 }
 
@@ -650,9 +656,10 @@ function disableSelection(element: HTMLElement): void {
 	// eslint-disable-next-line deprecation/deprecation
 	element.style.webkitUserSelect = 'none';
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-member-access
-	(element as any).style.msUserSelect = 'none';
+	(element.style as any).msUserSelect = 'none';
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-member-access
-	(element as any).style.MozUserSelect = 'none';
+	(element.style as any).MozUserSelect = 'none';
 
-	element.style.webkitTapHighlightColor = 'transparent';
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-member-access
+	(element.style as any).webkitTapHighlightColor = 'transparent';
 }
