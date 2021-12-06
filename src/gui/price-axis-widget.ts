@@ -216,6 +216,7 @@ export class PriceAxisWidget implements IDestroyable {
 		);
 		// make it even
 		res += res % 2;
+		console.log("optimalwidth: " + res);
 		return res;
 	}
 
@@ -237,6 +238,7 @@ export class PriceAxisWidget implements IDestroyable {
 	}
 
 	public getWidth(): number {
+		console.log("returning width for drawing: " + ensureNotNull(this._size).w);
 		return ensureNotNull(this._size).w;
 	}
 

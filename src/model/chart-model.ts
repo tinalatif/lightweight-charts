@@ -582,7 +582,7 @@ export class ChartModel implements IDestroyable {
 		return this._serieses;
 	}
 
-	public setAndSaveCurrentPosition(x: Coordinate, y: Coordinate, pane: Pane): void {
+	public setAndSaveCurrentPosition(x: Coordinate, y: Coordinate, pane: Pane, propagate: boolean = true): void {
 		this._crosshair.saveOriginCoord(x, y);
 		let price = NaN;
 		let index = this._timeScale.coordinateToIndex(x);
@@ -602,7 +602,11 @@ export class ChartModel implements IDestroyable {
 		this._crosshair.setPosition(index, price, pane);
 
 		this.cursorUpdate();
-		this._crosshairMoved.fire(this._crosshair.appliedIndex(), { x, y });
+		//console.log(`x,y: ${JSON.stringify(x)},${JSON.stringify(x)}`);
+		// Here is where we actually fire the _crosshairMoved event (listened to by many delegates)
+		if (propagate) {
+			this._crosshairMoved.fire(this._crosshair.appliedIndex(), { x, y });
+		}
 	}
 
 	public clearCurrentPosition(): void {

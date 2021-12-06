@@ -103,7 +103,7 @@ function lintFiles(files) {
 
 function main() {
 	const stagedFiles = getStagedFiles();
-	const errorsPresent = checkGitConflicts(stagedFiles) || lintFiles(stagedFiles);
+	const errorsPresent = checkGitConflicts(stagedFiles) //|| lintFiles(stagedFiles);
 
 	if (errorsPresent) {
 		console.error(`${redColor}

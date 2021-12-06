@@ -14,6 +14,7 @@ export {
 } from './api/data-consumer';
 
 export { createChart } from './api/create-chart';
+export { createStackedChart } from './api/create-chart';
 
 /**
  * Returns the current version as a string. For example `'3.3.0'`.

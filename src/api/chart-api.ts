@@ -7,6 +7,7 @@ import { clone, DeepPartial, isBoolean, merge } from '../helpers/strict-type-che
 
 import { BarPrice, BarPrices } from '../model/bar';
 import { ChartOptions, ChartOptionsInternal } from '../model/chart-model';
+import { Coordinate } from '../model/coordinate';
 import { ColorType } from '../model/layout-options';
 import { Series } from '../model/series';
 import {
@@ -188,6 +189,23 @@ export class ChartApi implements IChartApi, DataUpdatesConsumer<SeriesType> {
 
 		const model = this._chartWidget.model();
 		this._timeScaleApi = new TimeScaleApi(model, this._chartWidget.timeAxisWidget());
+	}
+
+	public testCrosshairMovedElsewhere(x: Coordinate, y: Coordinate): void {
+		// TODO this is pretty hacky?
+		const pane = this._chartWidget.model().panes()[0];
+		this._chartWidget.model().setAndSaveCurrentPosition(x, y, pane, /* propagate = */ false);
+
+		// I think it's probably crashing before it gets the chance to draw all of the charts
+
+		// const model = this._chartWidget.model();
+		// for (let i = 0; i < model.panes().length; i++) {
+		// 	model.setAndSaveCurrentPosition(x, y, model.panes()[i]);
+		// }
+	}
+
+	public setRightPriceAxisWidth(width: number): void {
+		this._chartWidget.setRightPriceAxisWidth(width);
 	}
 
 	public remove(): void {

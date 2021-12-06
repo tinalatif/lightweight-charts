@@ -725,6 +725,7 @@ export class PaneWidget implements IDestroyable {
 	}
 
 	private _setCrosshairPosition(x: Coordinate, y: Coordinate): void {
+		// this connects the widget with the model (sets source of truth)
 		this._model().setAndSaveCurrentPosition(this._correctXCoord(x), this._correctYCoord(y), ensureNotNull(this._state));
 	}
 

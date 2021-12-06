@@ -44,6 +44,8 @@ export class ChartWidget implements IDestroyable {
 	private _width: number = 0;
 	private _leftPriceAxisWidth: number = 0;
 	private _rightPriceAxisWidth: number = 0;
+	private _rightPriceAxisWidthOverride: number | null = null;
+	//private _measured
 	private _element: HTMLElement;
 	private readonly _tableElement: HTMLElement;
 	private _timeAxisWidget: TimeAxisWidget;
@@ -236,6 +238,7 @@ export class ChartWidget implements IDestroyable {
 					const paneWidgetHeight = paneWidget.getSize().h;
 					const priceAxisWidget = ensureNotNull(position === 'left' ? paneWidget.leftPriceAxisWidget() : paneWidget.rightPriceAxisWidget());
 					const image = priceAxisWidget.getImage();
+					// this is where we actually draw the price axis
 					ctx.drawImage(image, targetX, targetY, priceAxisWidget.getWidth(), paneWidgetHeight);
 					targetY += paneWidgetHeight;
 					// if (paneIndex < this._paneWidgets.length - 1) {
@@ -307,8 +310,12 @@ export class ChartWidget implements IDestroyable {
 			return 0;
 		}
 
-		if (position === 'right' && !this._isRightAxisVisible()) {
-			return 0;
+		if (position === 'right') {
+			if (!this._isRightAxisVisible()) {
+				return 0;
+			}
+			//console.log("returning _rightPriceAxisWidth="+this._rightPriceAxisWidth);
+			//return this._rightPriceAxisWidth;
 		}
 
 		if (this._paneWidgets.length === 0) {
@@ -324,12 +331,30 @@ export class ChartWidget implements IDestroyable {
 		return ensureNotNull(priceAxisWidget).getWidth();
 	}
 
+	// TODO should probably support either side
+	public setRightPriceAxisWidth(width: number): void {
+		// console.log("this._width: " + this._rightPriceAxisWidth + " width: " + width);
+		// if (this._rightPriceAxisWidth > width) {
+		// 	this._rightPriceAxisWidthOverride = null;
+		// 	return;
+		// }
+		this._rightPriceAxisWidthOverride = width;
+		console.log("calling adjustSizeImpl()");
+		// maybe this code should be implemented elsewhere so as to not require this call
+		//this._adjustSizeImpl();
+	}
+
 	// eslint-disable-next-line complexity
+	// do we even know if this is being called???
 	private _adjustSizeImpl(): void {
+		console.log("_adjustSizeImpl()");
 		let totalStretch = 0;
 		let leftPriceAxisWidth = 0;
 		let rightPriceAxisWidth = 0;
 
+		// crazy other idea - provide refs to each chart here?
+		// probably memory leak
+		// 
 		for (const paneWidget of this._paneWidgets) {
 			if (this._isLeftAxisVisible()) {
 				leftPriceAxisWidth = Math.max(leftPriceAxisWidth, ensureNotNull(paneWidget.leftPriceAxisWidget()).optimalWidth());
@@ -340,11 +365,13 @@ export class ChartWidget implements IDestroyable {
 
 			totalStretch += paneWidget.stretchFactor();
 		}
+		const overridenRightPriceAxisWidth = this._rightPriceAxisWidthOverride !== null
+						 				   ? this._rightPriceAxisWidthOverride : rightPriceAxisWidth;
 
 		const width = this._width;
 		const height = this._height;
 
-		const paneWidth = Math.max(width - leftPriceAxisWidth - rightPriceAxisWidth, 0);
+		const paneWidth = Math.max(width - leftPriceAxisWidth - overridenRightPriceAxisWidth, 0);
 
 		// const separatorCount = this._paneSeparators.length;
 		// const separatorHeight = SEPARATOR_HEIGHT;
@@ -382,8 +409,11 @@ export class ChartWidget implements IDestroyable {
 			if (this._isLeftAxisVisible()) {
 				paneWidget.setPriceAxisSize(leftPriceAxisWidth, 'left');
 			}
+
 			if (this._isRightAxisVisible()) {
-				paneWidget.setPriceAxisSize(rightPriceAxisWidth, 'right');
+				//paneWidget.setPriceAxisSize(50, 'right'); // this does work!
+				console.log('setting price axis size: overrideRightPriceAxisWidth: ' + overridenRightPriceAxisWidth + '\nCalculated is ' + rightPriceAxisWidth);
+				paneWidget.setPriceAxisSize(overridenRightPriceAxisWidth, 'right');
 			}
 
 			if (paneWidget.state()) {
@@ -394,7 +424,7 @@ export class ChartWidget implements IDestroyable {
 		this._timeAxisWidget.setSizes(
 			new Size(timeAxisVisible ? paneWidth : 0, timeAxisHeight),
 			timeAxisVisible ? leftPriceAxisWidth : 0,
-			timeAxisVisible ? rightPriceAxisWidth : 0
+			timeAxisVisible ? overridenRightPriceAxisWidth : 0
 		);
 
 		this._model.setWidth(paneWidth);

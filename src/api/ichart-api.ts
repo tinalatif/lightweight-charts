@@ -2,6 +2,7 @@ import { DeepPartial } from '../helpers/strict-type-checks';
 
 import { BarPrice, BarPrices } from '../model/bar';
 import { ChartOptions } from '../model/chart-model';
+import { Coordinate } from '../model/coordinate';
 import { Point } from '../model/point';
 import { SeriesMarker } from '../model/series-markers';
 import {
@@ -51,6 +52,9 @@ export interface MouseEventParams {
 	 * The ID of the marker at the point of the mouse event.
 	 */
 	hoveredMarkerId?: SeriesMarker<Time>['id'];
+
+	// TODO - something that indicates whether this was a real or synthetic event
+	//isOrganicUserAction: boolean;
 }
 
 /**
@@ -62,6 +66,10 @@ export type MouseEventHandler = (param: MouseEventParams) => void;
  * The main interface of a single chart.
  */
 export interface IChartApi {
+
+    testCrosshairMovedElsewhere(x: Coordinate, y: Coordinate): void;
+	setRightPriceAxisWidth(width: number): void;
+
 	/**
 	 * Removes the chart object including all DOM elements. This is an irreversible operation, you cannot do anything with the chart after removing it.
 	 */
