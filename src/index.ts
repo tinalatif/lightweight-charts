@@ -13,7 +13,7 @@ export {
 	isUTCTimestamp,
 } from './api/data-consumer';
 
-export { createChart } from './api/create-chart';
+export { createChart, synchronizeCharts } from './api/create-chart';
 
 /**
  * Returns the current version as a string. For example `'3.3.0'`.
