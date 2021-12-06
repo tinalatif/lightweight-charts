@@ -42,6 +42,8 @@ export function synchronizeCharts(charts: IChartApi[]): void {
 		charts[chart].timeScale().subscribeVisibleLogicalRangeChange((range: LogicalRange | null) => {
 			for (let otherChart = 0; otherChart < charts.length; otherChart++) {
 				if (otherChart !== chart && range) {
+					// The TimeScale's visible logical range only updates if the range is different,
+					// so no need to worry about infinite subscription loops
 					charts[otherChart].timeScale().setVisibleLogicalRange(range);
 				}
 			}
@@ -49,9 +51,11 @@ export function synchronizeCharts(charts: IChartApi[]): void {
 		// Set up crosshair syncronization
 		charts[chart].subscribeCrosshairMove((mouseEventParams: MouseEventParams) => {
 			for (let otherChart = 0; otherChart < charts.length; otherChart++) {
-				if (otherChart !== chart && mouseEventParams.point) {
-					// TODO
-					// charts[otherChart].testCrosshairMovedElsewhere(mouseEventParams.point.x, mouseEventParams.point.y);
+				if (otherChart !== chart) {
+					charts[otherChart].setCrosshairPosition(
+						mouseEventParams.point?.x,
+						mouseEventParams.point?.y
+					);
 				}
 			}
 		});

@@ -2,6 +2,7 @@ import { DeepPartial } from '../helpers/strict-type-checks';
 
 import { BarPrice, BarPrices } from '../model/bar';
 import { ChartOptions } from '../model/chart-model';
+import { Coordinate } from '../model/coordinate';
 import { Point } from '../model/point';
 import { SeriesMarker } from '../model/series-markers';
 import {
@@ -187,6 +188,11 @@ export interface IChartApi {
 	 * ```
 	 */
 	unsubscribeClick(handler: MouseEventHandler): void;
+
+	/**
+	 * Sets the crosshair position without triggering any subscriptions.
+	 */
+	setCrosshairPosition(x?: Coordinate, y?: Coordinate): void;
 
 	/**
 	 * Subscribe to the crosshair move event.

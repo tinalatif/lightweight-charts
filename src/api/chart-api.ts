@@ -7,6 +7,7 @@ import { clone, DeepPartial, isBoolean, merge } from '../helpers/strict-type-che
 
 import { BarPrice, BarPrices } from '../model/bar';
 import { ChartOptions, ChartOptionsInternal } from '../model/chart-model';
+import { Coordinate } from '../model/coordinate';
 import { ColorType } from '../model/layout-options';
 import { Series } from '../model/series';
 import {
@@ -322,6 +323,11 @@ export class ChartApi implements IChartApi, DataUpdatesConsumer<SeriesType> {
 
 	public unsubscribeClick(handler: MouseEventHandler): void {
 		this._clickedDelegate.unsubscribe(handler);
+	}
+
+	public setCrosshairPosition(x: Coordinate, y: Coordinate): void {
+		const pane = this._chartWidget.model().panes()[0];
+		this._chartWidget.model().setAndSaveCurrentPosition(x, y, pane, /* fireUpdate = */ false);
 	}
 
 	public subscribeCrosshairMove(handler: MouseEventHandler): void {
