@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html style="height:100%">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0">
+	<title>Debug page</title>
+
+	<script type="text/javascript" src="./dist/lightweight-charts.standalone.development.js"></script>
+</head>
+
+<body style="padding: 0; margin: 0; width:100%; height: 100%;">
+	<div style="display:flex; flex-direction:column; width:100%; height:100%;">
+		<div id="container0" style="display: flex; flex:1 0;"></div>
+		<div id="container1" style="display: flex; flex:1 0;"></div>
+		<div id="container2" style="display: flex; flex:1 0 ;"></div>
+		<div id="container3" style="display: flex; flex:1 0;"></div>
+	</div>
+
+	<script type="text/javascript">
+		function generateData(start) {
+			var res = [];
+			var time = new Date(Date.UTC(2018, 0, 1, 0, 0, 0, 0));
+			for (var i = start; i < 500+start; ++i) {
+				res.push({
+					time: time.getTime() / 1000,
+					value: i,
+				});
+
+				time.setUTCDate(time.getUTCDate() + 1);
+			}
+			return res;
+		}
+
+		var charts = []
+
+		for (var i = 0; i < 4; i++) {
+			var chart = LightweightCharts.createChart(document.getElementById('container' + i))
+
+			var mainSeries = chart.addLineSeries({
+				priceFormat: {
+					minMove: 1,
+					precision: 0,
+				},
+			});
+
+			charts.push(chart)
+			mainSeries.setData(generateData(i*50));
+		}
+
+		var stackedChart = LightweightCharts.synchronizeCharts(charts)
+	</script>
+</body>
+
+</html>
